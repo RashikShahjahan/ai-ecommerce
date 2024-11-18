@@ -6,6 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -14,7 +15,7 @@ datasource db {
 }
 
 model Category {
-  id          Int       @id @default(autoincrement())
+  id          String       @id @default(cuid())
   name        String
   description String
   slug        String    @unique
@@ -22,7 +23,7 @@ model Category {
 }
 
 model Product {
-  id          Int             @id @default(autoincrement())
+  id          String             @id @default(cuid())
   name        String
   description String
   imageUrl    String          @default("")
@@ -30,45 +31,45 @@ model Product {
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @default(now())
   category    Category        @relation(fields: [categoryId], references: [id])
-  categoryId  Int             
+  categoryId  String             
   variants    ProductVariant[]
   orders      Order[]
   cart        Cart?           @relation(fields: [cartId], references: [id])
-  cartId      Int?
+  cartId      String?
 }
 
 model ProductVariant {
-  id        Int     @id @default(autoincrement())
+  id        String     @id @default(cuid())
   color     String?
   size      String?
   sku       String  @unique
   stock     Int
   price     Float
   product   Product @relation(fields: [productId], references: [id])
-  productId Int
+  productId String
 }
 
 model Cart {
-  id        Int     @id @default(autoincrement())
+  id        String     @id @default(cuid())
   user      User    @relation(fields: [userId], references: [id])
-  userId    Int     @unique
+  userId    String     @unique
   items     Product[]
 }
 
 model User {
-  id   	Int  	@id @default(autoincrement())
+  id   	String  	@id @default(cuid())
   name     	String
   email    	String   @unique
   address  	String
   orders   	Order[]
   cart     	Cart?
-  cartId   	Int?
+  cartId   	String?
 }
 
 model Order {
-  id     	Int     	@id @default(autoincrement())
+  id     	String     	@id @default(cuid())
   user     	User    	@relation(fields: [userId], references: [id])
-  userId   	Int
+  userId   	String
   totalPrice  	Float
   shippingAddress String
   paymentStatus   String  	@default("pending")

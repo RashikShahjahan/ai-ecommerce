@@ -16,7 +16,7 @@ const CategorySchema = z.object({
   slug: z.string(),
 });
 
-export const ProductSchema = z.object({
+export const getProductResponseSchema = z.object({
   id: z.string(),
   name: z.string(),
   description: z.string(),
@@ -28,8 +28,13 @@ export const ProductSchema = z.object({
   updatedAt: z.date(),
 });
 
-export const ProductArraySchema = z.array(ProductSchema);
+export const getProductRequestSchema = z.object({
+  productId: z.string(),
+});
 
-export type Product = z.infer<typeof ProductSchema>;
-export type ProductArray = z.infer<typeof ProductArraySchema>;
+export const ProductArraySchema = z.array(getProductResponseSchema);
+
+export type GetProductResponse = z.infer<typeof getProductResponseSchema>;
+export type GetProductRequest = z.infer<typeof getProductRequestSchema>;
+export type GetProductArrayResponse = z.infer<typeof ProductArraySchema>;
 
