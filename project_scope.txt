@@ -1,0 +1,359 @@
+E-commerce Site with AI Chatbot
+Summary
+This project is an e-commerce site with product listings, cart functionality, Stripe payment integration, and an AI chatbot for inventory queries. Additionally, it includes an admin page for managing orders, allowing for adding, updating, and deleting orders as needed. I recommend structuring this as 3 JS projects: user frontend (aka app), backend (aka api server), and admin dashboard app (aka admin). 
+
+Inspiration
+Frontend Development
+Home Page
+Implement a basic layout with placeholders for featured products and categories.
+Ensure links to the product listing page are functional.
+
+Product Listing Page
+Display a grid of sample products.
+Implement basic filtering options for categories.
+
+Product Detail Page
+Display product images, name, description.
+Implement dropdowns or buttons for selecting color and size options.
+Include an "Add to Cart" button that updates the cart.
+
+Cart Page
+Display a list of selected products with details (name, color, size, price).
+Implement functionality to update item quantity or remove items.
+Calculate and display the subtotal, taxes, and total cost.
+Implement a "Proceed to Checkout" button linking to the checkout page.
+
+Checkout Page
+Implement a form for user information (name, address, email).
+Integrate Stripe's payment form for secure checkout.
+Display an order summary with a final "Place Order" button.
+
+Confirmation Page
+Display an order confirmation with order ID and summary.
+Include a thank you message and estimated delivery time.
+
+Backend Development
+Database
+Products: Store product details including name, description, price, inventory levels, and customization options (color, size).
+Users: Store user information including name, email, address, and order history.
+Orders: Store order details including user info, products, payment status, and order status.
+
+API
+Product API Endpoints:
+Get product details by ID.
+Update inventory when a purchase is made.
+Cart API Endpoints:
+Add items to the cart.
+Update or remove items from the cart.
+Retrieve cart contents.
+Order API Endpoints:
+Create a new order.
+Retrieve order status.
+Update order details (status, user info).
+Delete an order.
+Stripe Integration:
+Implement a payment processing endpoint using Stripe’s API.
+Handle payment status updates and link to order processing.
+AI Chatbot
+Chatbot Integration
+Integrate the chatbot with the product API to provide real-time inventory updates.
+Embed the chatbot on the frontend for user interaction across all pages.
+
+Basic Response Setup
+Set up responses for common queries, such as:
+"Is this product in stock?"
+"What colors and sizes are available?"
+"Can I track my order?"
+Admin Page for Order Management
+Admin UI
+Order Listing Page:
+Display a table of all orders with details (order ID, user, products, total amount, status).
+Implement filtering options (e.g., by status, date).
+Order Detail Page:
+Display detailed information for a specific order, including user info, products, and payment status.
+Provide options to update order status (e.g., processing, shipped, delivered).
+Implement functionality to edit user information or the products in the order.
+Add Order Page:
+Implement a form to manually create a new order.
+Allow selection of products, entry of user information, and order status.
+Delete Order Functionality:
+Provide a delete button to remove an order from the system.
+
+Admin API Endpoints
+Create Order: API endpoint to add a new order with user info and products.
+Update Order: API endpoint to modify existing order details (status, user info, products).
+Delete Order: API endpoint to remove an order by ID.
+List Orders: API endpoint to retrieve all orders with filtering options.
+
+Admin Authentication
+Implement basic authentication for accessing the admin page (e.g., password protection or OAuth).
+
+
+
+PROJECT SCOPE BREAKDOWN
+Given to claude with a basic roadmap
+https://claude.ai/chat/299fd6f3-46a9-46b0-9759-ecc48d7c5bdd
+
+API details
+Product API Endpoints
+1. Get Product Details by ID
+URL: GET /api/products/{productId}
+Request Body: None
+Response Body:
+{
+  "productId": "123",
+  "name": "Sample Product",
+  "description": "A detailed description of the product.",
+  "price": 19.99,
+  "inventory": 50,
+"customization": { "color": "red", "size": "M" }
+}
+
+
+2. Update Inventory When a Purchase is Made
+URL: PUT /api/products/{productId}/inventory
+Request Body:
+{
+  "quantity": 2
+}
+
+Response Body:
+
+{
+  "productId": "123",
+  "updatedInventory": 48
+}
+
+Cart API Endpoints
+1. Add Items to the Cart
+URL: POST /api/cart
+Request Body:
+
+{
+  "userId": "456",
+  "productId": "123",
+  "quantity": 2,
+}
+	
+Response Body:
+{
+  "cartId": "789",
+  "message": "Item added to cart successfully."
+}
+
+     2. Update Items from the Cart
+URL: PUT /api/cart/{cartId}
+Request Body:
+	{
+  "productId": "123",
+  "quantity": 1,
+}
+     3. Delete Items from the Cart
+URL: DELETE /api/cart/{cartId}
+Request Body:
+	{
+  "productId": "123",
+  "quantity": 1,
+}
+Response Body:
+
+{
+  "cartId": "789",
+  "updatedCart": [
+	{
+  	"productId": "123",
+  	"quantity": 1,
+	}
+  ]
+}
+    4. Retrieve Cart Contents
+URL: GET /api/cart/{userId}
+Request Body: None
+Response Body:
+	{
+  "cartId": "789",
+  "userId": "456",
+  "cartItems": [
+	{
+  	"productId": "123",
+  	"name": "Sample Product",
+  	"quantity": 2,
+  	"price": 19.99,
+"customization": { "color": "red", "size": "M" }
+	}
+  ],
+  "totalPrice": 39.98
+}
+
+Order API Endpoints
+1. Create a New Order
+URL: POST /api/orders
+Request Body:
+{
+  "userId": "456",
+  "cartId": "789",
+  "shippingAddress": "123 Main St, Springfield, USA",
+  "paymentMethod": "stripe",
+  "totalPrice": 39.98
+}
+
+Response Body:
+{
+  "orderId": "987",
+  "message": "Order created successfully.",
+  "orderStatus": "pending"
+}
+
+2. Retrieve Order Status
+URL: GET /api/orders/{orderId}
+Request Body: None
+Response Body:
+{
+  "orderId": "987",
+  "status": "pending",
+  "orderDetails": {
+	"userId": "456",
+	"totalPrice": 39.98,
+	"items": [
+  	{
+    	"productId": "123",
+    	"name": "Sample Product",
+    	"quantity": 2,
+"customization": { "color": "red", "size": "M" }
+  	}
+	],
+	"shippingAddress": "123 Main St, Springfield, USA"
+  }
+}
+
+3. Update Order Details
+URL: PUT /api/orders/{orderId}
+Request Body:
+{
+  "status": "shipped",
+  "userInfo": {
+	"name": "John Doe",
+	"email": "john.doe@example.com"
+  }
+}
+
+Response Body:
+{
+  "orderId": "987",
+  "updatedOrder": {
+	"status": "shipped",
+	"userInfo": {
+  	"name": "John Doe",
+  	"email": "john.doe@example.com"
+	}
+  }
+}
+
+4. Delete an Order
+URL: DELETE /api/orders/{orderId}
+Request Body: None
+Response Body:
+{
+  "orderId": "987",
+  "message": "Order deleted successfully."
+}
+
+Stripe Integration
+1. Payment Processing Endpoint
+URL: POST /api/payments/stripe
+Request Body:
+{
+  "orderId": "987",
+  "amount": 39.98,
+  "currency": "usd",
+  "paymentMethodId": "pm_1Kyj5P2eZvKYlo2CaFh3byJ"
+}
+Response body
+{
+  "paymentId": "pi_1Kyj5P2eZvKYlo2CaFh3byJ",
+  "status": "succeeded",
+  "orderId": "987"
+}
+2. Handle Payment Status Updates
+URL: POST /api/payments/stripe/webhook
+Request Body:
+{
+  "event": "payment_intent.succeeded",
+  "paymentIntent": {
+	"id": "pi_1Kyj5P2eZvKYlo2CaFh3byJ",
+	"status": "succeeded",
+	"amount_received": 3998
+  }
+}
+Response Body:
+{
+  "message": "Payment status updated and linked to order processing.",
+  "orderId": "987",
+  "updatedOrderStatus": "paid"
+}
+
+
+Database Models
+
+// Prisma Schema
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql" // or "postgresql", depending on your database
+  url  	= env("DATABASE_URL")
+}
+
+model Product {
+  productId   Int  	@id @default(autoincrement())
+  name    	String
+  description String?
+  price   	Float
+  inventory   Int
+  color   	String?
+  size    	String?
+  orders  	OrderItem[]
+}
+
+model User {
+  userId   	Int  	@id @default(autoincrement())
+  name     	String
+  email    	String   @unique
+  address  	String
+  orders   	Order[]
+}
+
+model Order {
+  orderId     	Int     	@id @default(autoincrement())
+  user        	User    	@relation(fields: [userId], references: [userId])
+  userId      	Int
+  totalPrice  	Float
+  shippingAddress String
+  paymentStatus   String  	@default("pending")
+  orderStatus 	String  	@default("pending")
+  items       	Json    	// Stores product and quantity as JSON
+}
+
+model OrderItem {
+  id    	Int 	@id @default(autoincrement())
+  order 	Order   @relation(fields: [orderId], references: [orderId])
+  orderId   Int
+  product   Product @relation(fields: [productId], references: [productId])
+  productId Int
+  quantity  Int
+}
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
