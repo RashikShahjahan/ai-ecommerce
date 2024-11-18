@@ -1,17 +1,31 @@
 import { z } from "zod";
 
-const CustomizationSchema = z.object({
-  color: z.string(),
-  size: z.string(),
+const ProductVariantSchema = z.object({
+  id: z.string(),
+  color: z.string().optional(),
+  size: z.string().optional(),
+  sku: z.string(),
+  stock: z.number().int(),
+  price: z.number(),
+});
+
+const CategorySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  slug: z.string(),
 });
 
 export const ProductSchema = z.object({
-  productId: z.string(),
+  id: z.string(),
   name: z.string(),
   description: z.string(),
-  price: z.number(),
-  inventory: z.number().int(),
-  customization: CustomizationSchema,
+  imageUrl: z.string(),
+  category: CategorySchema,
+  variants: z.array(ProductVariantSchema),
+  featured: z.boolean(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
 });
 
 export const ProductArraySchema = z.array(ProductSchema);
