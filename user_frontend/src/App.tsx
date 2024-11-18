@@ -1,11 +1,14 @@
 import { AppRoutes } from './Routes'
 import { Layout } from './components/Layout'
+import { CartProvider } from './context/CartContext'
 
 function App() {
   return (
-    <Layout>
-      <AppRoutes />
-    </Layout>
+    <CartProvider>
+      <Layout>
+        <AppRoutes />
+      </Layout>
+    </CartProvider>
   )
 }
 
