@@ -2,7 +2,7 @@ import { z } from "zod";
 import { ProductSchema } from "./product";
 
 
-export const CartResponseSchema = z.object({
+export const GetCartResponseSchema = z.object({
   cartId: z.string(),
   userId: z.string(),
   cartItems: z.array(ProductSchema),
@@ -31,7 +31,7 @@ export const UpdateCartResponseSchema = z.object({
   updatedCart: z.array(UpdateCartRequestSchema),
 });
 
-export type Cart = z.infer<typeof CartResponseSchema>;
+export type GetCartResponse = z.infer<typeof GetCartResponseSchema>;
 export type AddToCartRequest = z.infer<typeof AddToCartRequestSchema>;
 export type AddToCartResponse = z.infer<typeof AddToCartResponseSchema>;
 export type UpdateCartRequest = z.infer<typeof UpdateCartRequestSchema>;
