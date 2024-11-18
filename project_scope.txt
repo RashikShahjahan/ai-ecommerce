@@ -110,6 +110,7 @@ Response Body:
 }
 
 
+
 2. Update Inventory When a Purchase is Made
 URL: PUT /api/products/{productId}/inventory
 Request Body:
@@ -123,6 +124,21 @@ Response Body:
   "productId": "123",
   "updatedInventory": 48
 }
+
+3. Get All Products
+URL: GET /api/products
+Request Body: None
+Response Body:
+[
+  {
+    "productId": "123",
+    "name": "Sample Product",
+    "description": "A detailed description of the product.",
+    "price": 19.99,
+    "inventory": 50,
+    "customization": { "color": "red", "size": "M" }
+  }
+]
 
 Cart API Endpoints
 1. Add Items to the Cart
