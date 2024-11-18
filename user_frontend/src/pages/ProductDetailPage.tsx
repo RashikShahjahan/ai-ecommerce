@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { products } from '../data/mockData';
 import type { Product } from '../types/types';
+import { useCart } from '../context/CartContext';
 
 export function ProductDetailPage() {
     const { id } = useParams<{ id: string }>();
     const [quantity, setQuantity] = useState(1);
     const [selectedVariantId, setSelectedVariantId] = useState<string>('');
+    const { addToCart } = useCart();
 
     // Find the product from our mock data
     const product = products.find(p => p.id === id);
@@ -24,12 +26,8 @@ export function ProductDetailPage() {
     }
 
     const handleAddToCart = () => {
-        if (!selectedVariant) return;
-        console.log('Adding to cart:', {
-            product,
-            variant: selectedVariant,
-            quantity
-        });
+        if (!selectedVariant || !product) return;
+        addToCart(product, selectedVariant, quantity);
     };
 
     return (

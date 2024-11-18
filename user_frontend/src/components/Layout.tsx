@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom'
+import { useCart } from '../context/CartContext';
 
 export function Layout({ children }: { children: React.ReactNode }) {
+    const { items } = useCart();
+
     return (
         <div className="min-h-screen flex flex-col bg-gray-900 text-white">
             <header className="bg-gray-800 shadow-lg">
@@ -30,7 +33,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                             >
                                 <span>Cart</span>
                                 <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
-                                    0
+                                    {items.length}
                                 </span>
                             </Link>
                         </div>

@@ -25,3 +25,11 @@ export interface Product {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface CartItem {
+  productId: string;
+  variantId: string;
+  quantity: number;
+  product: Product;
+  variant: ProductVariant;
+}
