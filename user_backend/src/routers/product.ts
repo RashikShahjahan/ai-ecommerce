@@ -1,6 +1,6 @@
 import { Router } from "express";
 import prisma from "../../prisma/client";
-import { getProductRequestSchema, getProductResponseSchema } from "../schemas/product";
+import { getProductRequestSchema, getProductResponseSchema, ProductArraySchema } from "../schemas/product";
 const router = Router();
 
 router.get("/:productId", async (req, res) => {
@@ -18,6 +18,11 @@ router.get("/:productId", async (req, res) => {
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
+});
+
+router.get("/", async (req, res) => {
+  const products = await prisma.product.findMany();
+  res.status(200).json(ProductArraySchema.parse(products));
 });
 
 export default router;
