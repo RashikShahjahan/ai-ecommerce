@@ -5,8 +5,8 @@ const ProductVariantSchema = z.object({
   color: z.string().optional(),
   size: z.string().optional(),
   sku: z.string(),
-  stock: z.number().int(),
-  price: z.number(),
+  stock: z.number().int().nonnegative(),
+  price: z.number().nonnegative(),
 });
 
 const CategorySchema = z.object({
@@ -24,8 +24,8 @@ export const ProductSchema = z.object({
   category: CategorySchema,
   variants: z.array(ProductVariantSchema),
   featured: z.boolean(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
 });
 
 export const ProductArraySchema = z.array(ProductSchema);
