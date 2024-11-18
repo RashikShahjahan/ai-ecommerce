@@ -17,7 +17,7 @@ model Product {
   productId   Int  	@id @default(autoincrement())
   name    	String
   description String?
-  price   	Float
+  price   	Decimal
   inventory   Int
   color   	String?
   size    	String?
