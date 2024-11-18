@@ -1,27 +1,10 @@
 import { useState, useEffect } from 'react';
 import { ProductGrid } from '../components/ProductGrid';
-
-// Dummy data for testing
-const DUMMY_PRODUCTS = [
-    {
-        id: '1',
-        name: 'Wireless Headphones',
-        price: 99.99,
-        imageUrl: 'https://placeholder.com/400x300',
-        description: 'High-quality wireless headphones'
-    },
-    {
-        id: '2',
-        name: 'Smartphone',
-        price: 699.99,
-        imageUrl: 'https://placeholder.com/400x300',
-        description: 'Latest model smartphone'
-    },
-    // Add more dummy products as needed
-];
+import { products } from '../data/mockData';
+import type { Product } from '../types/types';
 
 export function ProductListingPage() {
-    const [products, setProducts] = useState(DUMMY_PRODUCTS);
+    const [productList, setProductList] = useState<Product[]>(products);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -41,7 +24,7 @@ export function ProductListingPage() {
         );
     }
 
-    if (!products.length) {
+    if (!productList.length) {
         return (
             <div className="flex justify-center items-center min-h-[400px]">
                 <div className="text-xl text-gray-300">No products found</div>
@@ -52,7 +35,7 @@ export function ProductListingPage() {
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h1 className="text-3xl font-bold mb-8">Our Products</h1>
-            <ProductGrid products={products} />
+            <ProductGrid products={productList} />
         </div>
     );
 }
