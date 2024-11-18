@@ -1,11 +1,11 @@
 import { z } from "zod";
-import { ProductSchema } from "./product";
+import { getProductResponseSchema } from "./product";
 
 
 export const GetCartResponseSchema = z.object({
   cartId: z.string(),
   userId: z.string(),
-  cartItems: z.array(ProductSchema),
+  cartItems: z.array(getProductResponseSchema),
   totalPrice: z.number(),
 });
 
