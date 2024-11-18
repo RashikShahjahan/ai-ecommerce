@@ -18,7 +18,7 @@ model Category {
   id          String       @id @default(cuid())
   name        String
   description String
-  slug        String    @unique
+  slug        String       @unique
   products    Product[]
 }
 

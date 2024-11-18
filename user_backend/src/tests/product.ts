@@ -3,16 +3,35 @@ import axios from "axios";
 
 const BASE_URL = "http://localhost:3000"; // adjust port if different
 
-async function testGetProductByIdEndpoint() {
-  try {
-    // 1. First create a test category (required for product)
-    const testCategory = await prisma.category.create({
+// Add helper functions at the top
+async function ensureTestCategory(categoryNum = 1) {
+  const slug = `test-category-${categoryNum}`;
+  let category = await prisma.category.findFirst({ where: { slug } });
+  
+  if (!category) {
+    category = await prisma.category.create({
       data: {
-        name: "Test Category",
-        description: "A test category description",
-        slug: `test-category-${Date.now()}`
+        name: `Test Category ${categoryNum}`,
+        description: `A test category ${categoryNum} description`,
+        slug
       }
     });
+  }
+  return category;
+}
+
+async function clearTestData() {
+  console.log("Clearing test data...");
+  await prisma.productVariant.deleteMany({});
+  await prisma.product.deleteMany({});
+  await prisma.category.deleteMany({});
+  console.log("Test data cleared");
+}
+
+async function testGetProductEndpoint() {
+  try {
+    // Modified to use helper function
+    const testCategory = await ensureTestCategory();
 
     // Create test product with all required fields
     console.log("Creating test product...");
@@ -60,16 +79,13 @@ async function testGetProductByIdEndpoint() {
       }
     }
 
-    // 3. Clean up - update cleanup to delete related records
+    // Modified cleanup - only delete the product and its variants, keep the category
     console.log("\nCleaning up test data...");
     await prisma.productVariant.deleteMany({
       where: { productId: testProduct.id }
     });
     await prisma.product.delete({
       where: { id: testProduct.id }
-    });
-    await prisma.category.delete({
-      where: { id: testCategory.id }
     });
     console.log("Test data deleted");
 
@@ -80,6 +96,107 @@ async function testGetProductByIdEndpoint() {
   }
 }
 
+const testFilterProductsEndpoint = async () => {
+    try {
+        // Create test category
+        const testCategory = await ensureTestCategory();
+
+        // Create multiple test products with different attributes
+        console.log("Creating test products...");
+        const testProducts = await Promise.all([
+            prisma.product.create({
+                data: {
+                    name: "Test Product 1",
+                    description: "Featured product",
+                    imageUrl: "https://example.com/test-image1.jpg",
+                    featured: true,
+                    categoryId: testCategory.id,
+                    variants: {
+                        create: [{
+                            color: "Blue",
+                            size: "M",
+                            sku: `TEST-SKU-1-${Date.now()}`,
+                            stock: 100,
+                            price: 99.99
+                        }]
+                    }
+                },
+                include: {
+                    category: true,
+                    variants: true
+                }
+            }),
+            prisma.product.create({
+                data: {
+                    name: "Test Product 2",
+                    description: "Non-featured product",
+                    imageUrl: "https://example.com/test-image2.jpg",
+                    featured: false,
+                    categoryId: testCategory.id,
+                    variants: {
+                        create: [{
+                            color: "Red",
+                            size: "L",
+                            sku: `TEST-SKU-2-${Date.now()}`,
+                            stock: 50,
+                            price: 149.99
+                        }]
+                    }
+                },
+                include: {
+                    category: true,
+                    variants: true
+                }
+            })
+        ]);
+        console.log("Created products:", testProducts);
+
+        // Test different filter scenarios
+        console.log("\nTesting GET api/products with filters...");
+        
+        // Test featured filter
+        const featuredResponse = await axios.get(`${BASE_URL}/api/products?featured=true`);
+        console.log("Featured products response:", featuredResponse.data);
+        
+        // Test category filter
+        const categoryResponse = await axios.get(`${BASE_URL}/api/products?categoryId=${testCategory.id}`);
+        console.log("Category filter response:", categoryResponse.data);
+        
+        // Test price range filter
+        const priceResponse = await axios.get(`${BASE_URL}/api/products?minPrice=100&maxPrice=200`);
+        console.log("Price range filter response:", priceResponse.data);
+
+        // Clean up test data
+        console.log("\nCleaning up test data...");
+        for (const product of testProducts) {
+            await prisma.productVariant.deleteMany({
+                where: { productId: product.id }
+            });
+            await prisma.product.delete({
+                where: { id: product.id }
+            });
+        }
+        console.log("Test data deleted");
+
+    } catch (error: any) {
+        console.error("Error:", error.response?.data || error.message);
+    } finally {
+        await prisma.$disconnect();
+    }
+}
+
+
 // Run the tests
 console.log("Starting endpoint tests...\n");
-testGetProductByIdEndpoint();
+(async () => {
+  try {
+    await clearTestData(); // Clear before tests
+    await Promise.all([
+      testGetProductEndpoint(),
+      testFilterProductsEndpoint()
+    ]);
+  } finally {
+    await clearTestData(); // Clear after tests
+    await prisma.$disconnect();
+  }
+})();

@@ -16,6 +16,10 @@ const CategorySchema = z.object({
   slug: z.string(),
 });
 
+const ProductIdSchema = z.object({
+  id: z.string(),
+});
+
 export const getProductResponseSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -28,13 +32,23 @@ export const getProductResponseSchema = z.object({
   updatedAt: z.date(),
 });
 
-export const getProductRequestSchema = z.object({
-  productId: z.string(),
+export const getProductRequestSchema = ProductIdSchema;
+
+const ProductFiltersSchema = z.object({
+  categoryIds: z.array(z.string()).optional(),
+  colors: z.array(z.string()).optional(),
+  sizes: z.array(z.string()).optional(),
+  minPrice: z.string().transform((val) => Number(val)).optional(),
+  maxPrice: z.string().transform((val) => Number(val)).optional(),
+  inStock: z.boolean().optional(),
 });
 
-export const ProductArraySchema = z.array(getProductResponseSchema);
+export const filterProductsRequestSchema = ProductFiltersSchema;
+
+export const filterProductsResponseSchema = z.array(ProductIdSchema);
 
 export type GetProductResponse = z.infer<typeof getProductResponseSchema>;
 export type GetProductRequest = z.infer<typeof getProductRequestSchema>;
-export type GetProductArrayResponse = z.infer<typeof ProductArraySchema>;
+export type FilterProductsRequest = z.infer<typeof filterProductsRequestSchema>;
+export type FilterProductsResponse = z.infer<typeof filterProductsResponseSchema>;
 
