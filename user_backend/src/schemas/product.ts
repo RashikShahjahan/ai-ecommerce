@@ -1,54 +1,33 @@
 import { z } from "zod";
 
-const ProductVariantSchema = z.object({
+const ManifestationSchema = z.object({
   id: z.string(),
-  color: z.string().optional(),
-  size: z.string().optional(),
-  sku: z.string(),
-  stock: z.number().int().nonnegative(),
-  price: z.number().nonnegative(),
+  intensity: z.string(),
+  clarity: z.string(),
+  frequency: z.string(),
+  price: z.number(),
+  stock: z.string(),
 });
 
-const CategorySchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  description: z.string(),
-  slug: z.string(),
-});
-
-const ProductIdSchema = z.object({
-  id: z.string(),
-});
-
-export const getProductResponseSchema = z.object({
+const EssenceSchema = z.object({
   id: z.string(),
   name: z.string(),
   description: z.string(),
-  imageUrl: z.string(),
-  category: CategorySchema,
-  variants: z.array(ProductVariantSchema),
-  featured: z.boolean(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  energySignature: z.string(),
+  manifestation: z.array(ManifestationSchema),
+  duration: z.enum(['EPHEMERAL', 'TEMPORAL', 'PERSISTENT', 'ETERNAL']),
+  origin: z.string(),
+  sideEffects: z.array(z.string()),
 });
 
-export const getProductRequestSchema = ProductIdSchema;
-
-const ProductFiltersSchema = z.object({
-  categoryIds: z.array(z.string()).optional(),
-  colors: z.array(z.string()).optional(),
-  sizes: z.array(z.string()).optional(),
-  minPrice: z.string().transform((val) => Number(val)).optional(),
-  maxPrice: z.string().transform((val) => Number(val)).optional(),
-  inStock: z.boolean().optional(),
+export const chatRequestSchema = z.object({
+  query: z.string(),
 });
 
-export const filterProductsRequestSchema = ProductFiltersSchema;
+export const searchEssenceResponseSchema = z.array(EssenceSchema);
 
-export const filterProductsResponseSchema = z.array(ProductIdSchema);
 
-export type GetProductResponse = z.infer<typeof getProductResponseSchema>;
-export type GetProductRequest = z.infer<typeof getProductRequestSchema>;
-export type FilterProductsRequest = z.infer<typeof filterProductsRequestSchema>;
-export type FilterProductsResponse = z.infer<typeof filterProductsResponseSchema>;
+export type ChatRequest = z.infer<typeof chatRequestSchema>;
+export type SearchEssencesResponse = z.infer<typeof searchEssenceResponseSchema>;
+
 

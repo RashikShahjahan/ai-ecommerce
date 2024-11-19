@@ -20,13 +20,9 @@ model Essence {
   description   String
   energySignature String        // The unique vibrational pattern of this essence
   manifestation Manifestation[]
-  etherealRating Float          // How transcendent the experience is (0-10)
   duration      DurationType    @default(EPHEMERAL)
-  origin        String?         // e.g., "Collective Unconscious", "Personal Memories"
-  resonance     Float          // How strongly it resonates with human consciousness
+  origin        String         // e.g., "Collective Unconscious", "Personal Memories"
   sideEffects   String[]       // e.g., ["Temporary Euphoria", "Heightened Awareness"]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @default(now())
   orders        Order[]
   cart          Cart?          @relation(fields: [cartId], references: [id])
   cartId        String?
@@ -34,13 +30,13 @@ model Essence {
 
 model Manifestation {
   id            String    @id @default(cuid())
-  intensity     Float     // Strength of the experience (0-10)
-  clarity       Float     // How clear the experience manifests
-  frequency     String    // Vibrational frequency of the experience
-  price         Float
+  intensity     String    // e.g., "mild", "moderate", "intense", "overwhelming"
+  clarity       String    // e.g., "cloudy", "clear", "crystalline", "perfect"
+  frequency     String    // e.g., "low", "medium", "high", "ultrahigh"
   essence       Essence   @relation(fields: [essenceId], references: [id])
   essenceId     String
-  availability  Boolean   @default(true)  // Some experiences may need recharging
+  stock         String    // e.g., "out of stock", "limited", "available", "abundant"
+  price         Float
 }
 
 model Cart {
@@ -58,10 +54,6 @@ model User {
   orders    Order[]
   cart      Cart?
   cartId    String?
-  // Added some mystical attributes to regular users
-  vibration Float     @default(1.0)
-  karmaPoints Int     @default(0)
-  awarenessLevel Int  @default(1)
 }
 
 model Order {
@@ -69,7 +61,6 @@ model Order {
   user            User      @relation(fields: [userId], references: [id])
   userId          String
   totalPrice      Float
-  shippingAddress String    // Now more like a "manifestation location"
   paymentStatus   String    @default("pending")
   orderStatus     String    @default("pending")
   items           Essence[]

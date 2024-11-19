@@ -1,11 +1,11 @@
 import { z } from "zod";
-import { getProductResponseSchema } from "./product";
+import { searchEssenceResponseSchema } from "./product";
 
 
 export const GetCartResponseSchema = z.object({
   cartId: z.string(),
   userId: z.string(),
-  cartItems: z.array(getProductResponseSchema),
+  cartItems: z.array(searchEssenceResponseSchema),
   totalPrice: z.number(),
 });
 
