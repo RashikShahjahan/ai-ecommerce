@@ -1,4 +1,4 @@
-import { storeEssenceEmbedding } from '../src/chatbot/embeddings'
+import { storeEssenceEmbedding } from '../src/chatbot/utils/embeddings'
 import prisma from '../prisma/client'
 
 

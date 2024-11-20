@@ -1,6 +1,6 @@
 import { VoyageAIClient } from "voyageai";
 import pgvector from 'pgvector';
-import prisma from '../../prisma/client';
+import prisma from '../../../prisma/client';
 
 const client = new VoyageAIClient({ apiKey: process.env.VOYAGE_API_KEY });
 
@@ -32,16 +32,21 @@ export async function storeEssenceEmbedding(essenceId: string, content: string):
   `;
 }
 
-export async function findSimilarDocuments(essenceId: string, query: string, limit: number = 1): Promise<string[]> {
+export async function findSimilarDocuments(query: string, limit: number = 1): Promise<any[]> {
   const queryEmbedding = await generateEmbedding(query);
   const vectorString = pgvector.toSql(queryEmbedding);
-  const result = await prisma.$queryRaw<Array<{ content: string }>>`
-    SELECT  embedding <-> ${vectorString}::vector as distance
+  const result = await prisma.$queryRaw<Array<any>>`
+    SELECT 
+      id,
+      name,
+      description,
+      price,
+      stock,
+      embedding <-> ${vectorString}::vector as distance
     FROM "Essence"
-    WHERE id = ${essenceId}
     ORDER BY distance ASC
     LIMIT ${limit}
   `;
 
-  return result.map((row) => row.content);
+  return result;
 }
