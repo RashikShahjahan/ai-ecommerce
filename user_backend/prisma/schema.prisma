@@ -16,28 +16,16 @@ datasource db {
 
 model Essence {
   id            String           @id @default(cuid())
-  name          String          // e.g., "Childhood Wonder", "First Love", "Autumn Melancholy"
-  description   String
-  energySignature String        // The unique vibrational pattern of this essence
-  manifestation Manifestation[]
-  duration      DurationType    @default(EPHEMERAL)
-  origin        String         // e.g., "Collective Unconscious", "Personal Memories"
-  sideEffects   String[]       // e.g., ["Temporary Euphoria", "Heightened Awareness"]
+  name          String          // e.g., "Teenage Angst Premium", "Midlife Crisis Deluxe", "Monday Morning Dread"
+  description   String          // e.g., "Capture the authentic aroma of your parent's disappointment, with subtle notes of slammed doors and dramatic sighs"
   orders        Order[]
   cart          Cart?          @relation(fields: [cartId], references: [id])
   cartId        String?
+  price         Float
+  stock         Int
 }
 
-model Manifestation {
-  id            String    @id @default(cuid())
-  intensity     String    // e.g., "mild", "moderate", "intense", "overwhelming"
-  clarity       String    // e.g., "cloudy", "clear", "crystalline", "perfect"
-  frequency     String    // e.g., "low", "medium", "high", "ultrahigh"
-  essence       Essence   @relation(fields: [essenceId], references: [id])
-  essenceId     String
-  stock         String    // e.g., "out of stock", "limited", "available", "abundant"
-  price         Float
-}
+
 
 model Cart {
   id        String     @id @default(cuid())
@@ -64,13 +52,6 @@ model Order {
   paymentStatus   String    @default("pending")
   orderStatus     String    @default("pending")
   items           Essence[]
-}
-
-enum DurationType {
-  EPHEMERAL      // Lasts a moment
-  TEMPORAL       // Lasts a day
-  PERSISTENT     // Lasts a week
-  ETERNAL        // Permanently changes the experiencer
 }
 
 
