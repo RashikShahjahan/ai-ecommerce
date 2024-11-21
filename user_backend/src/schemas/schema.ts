@@ -9,13 +9,6 @@ export const EssenceSchema = z.object({
   distance: z.number(),
 });
 
-export const FormattedEssenceSchema = z.object({
-  name: z.string(),
-  description: z.string(),
-  price: z.number(),
-  stock: z.number(),
-  similarity: z.number(),
-});
 
 export const MessageContentSchema = z.object({
   type: z.string(),
@@ -23,23 +16,16 @@ export const MessageContentSchema = z.object({
 });
 
 
-export const ProductSearchResultSchema = z.object({
-  name: z.string(),
-  description: z.string(),
-  price: z.number(),
-  stock: z.number(),
-  similarity: z.number(),
-});
-
 
 export const ToolResultSchema = z.discriminatedUnion('toolName', [
   z.object({
     toolName: z.literal('searchEssences'),
-    data: z.array(ProductSearchResultSchema)
+    data: z.array(EssenceSchema)
   }),
 ]);
 
 export const ChatResponseSchema = z.object({
+  chatId: z.string(),
   message: z.array(MessageContentSchema),
   toolResults: z.array(ToolResultSchema).nullable(),
 });
@@ -63,15 +49,11 @@ export const messageSchema = z.object({
   content: z.string(),
 });
 
-export const searchEssenceResponseSchema = z.array(EssenceSchema);
 
 export type Essence = z.infer<typeof EssenceSchema>;
-export type FormattedEssence = z.infer<typeof FormattedEssenceSchema>;
 export type ChatResponse = z.infer<typeof ChatResponseSchema>;
 export type ToolUse = z.infer<typeof ToolUseSchema>;
 export type ChatRequest = z.infer<typeof chatRequestSchema>;
-export type SearchEssencesResponse = z.infer<typeof searchEssenceResponseSchema>;
-export type ProductSearchResult = z.infer<typeof ProductSearchResultSchema>;
 export type ToolResult = z.infer<typeof ToolResultSchema>;
 export type Message = z.infer<typeof messageSchema>;
 export type MessageRole = z.infer<typeof messageRoleSchema>;
