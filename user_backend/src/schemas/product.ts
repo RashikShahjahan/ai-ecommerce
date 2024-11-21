@@ -36,7 +36,6 @@ export const ToolResultSchema = z.discriminatedUnion('toolName', [
     toolName: z.literal('searchEssences'),
     data: z.array(ProductSearchResultSchema)
   }),
-  // Add more tools as needed
 ]);
 
 export const ChatResponseSchema = z.object({

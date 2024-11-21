@@ -45,6 +45,7 @@ model User {
   orders    Order[]
   cart      Cart?
   cartId    String?
+  chatHistory ChatHistory[]
 }
 
 model Order {
@@ -57,6 +58,12 @@ model Order {
   items           Essence[]
 }
 
+model ChatHistory {
+  id              String    @id @default(cuid())
+  user            User      @relation(fields: [userId], references: [id])
+  userId          String
+  messages        String
+}
 
 
 
