@@ -6,8 +6,11 @@ import  {
     type Essence, 
     type ChatResponse, 
     ToolUseSchema,
-    ChatResponseSchema 
-} from '../schemas/product';
+    ChatResponseSchema,
+    type Message,
+    type MessageRole
+} from '../schemas/schema';
+import prisma from '../../prisma/client';
 
 const client = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY 
@@ -34,13 +37,42 @@ async function processToolCall(toolName: string, toolInput: Record<string, unkno
     }
 }
 
-export async function chat(prompt: string): Promise<ChatResponse> {
-    try {
-        const message = await client.messages.create({
-            model: "claude-3-5-sonnet-20241022",
-            max_tokens: 1024,
-            tools: [PRODUCT_SEARCH_TOOL],
-            messages: [{ role: "user", content: prompt }],
+export async function chat(prompt: string, chatId: string): Promise<ChatResponse> {
+    if (chatId === "") {
+        const newChat = await prisma.chatHistory.create({
+            data: {
+                messages: {
+                    create: [{ content: prompt, role: "user" }]
+                },
+                userId: "1"
+            }
+        });
+        chatId = newChat.id;
+    }
+
+    const chatHistory = await prisma.chatHistory.findUnique({
+        where: {
+            id: chatId
+        },
+        select: {
+            messages: true
+        }
+    });
+
+    if (!chatHistory) {
+        throw new Error("Chat history not found");
+    }
+
+    const previousMessages: Message[] = chatHistory.messages.map((message) => ({ 
+        role: message.role as MessageRole, 
+        content: message.content 
+    }));
+
+    const message = await client.messages.create({
+        model: "claude-3-5-sonnet-20241022",
+        max_tokens: 1024,
+        tools: [PRODUCT_SEARCH_TOOL],
+        messages: [...previousMessages, { role: "user", content: prompt }],
         });
 
         if (message.stop_reason === "tool_use") {
@@ -113,15 +145,6 @@ export async function chat(prompt: string): Promise<ChatResponse> {
             message: message.content,
             toolResults: null
         });
-    } catch (error) {
-        console.error(error);
-        return ChatResponseSchema.parse({
-            message: [{
-                type: "text",
-                text: "An error occurred while processing your request."
-            }],
-            toolResults: null
-        });
-    }
+
 }
 
