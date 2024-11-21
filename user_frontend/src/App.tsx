@@ -10,15 +10,28 @@ function App() {
       content: '👋 Hello! I\'m your AI assistant. How can I help you today?'
     }
   ]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSend = async () => {
-    const data = await getChatResponse(prompt, chatId);
-    setChatId(data.message.chatId);
     setMessages(prev => [...prev, 
       { role: 'user', content: prompt },
-      { role: 'assistant', content: data.message.message[0].text }
+      { role: 'assistant', content: '...' }
     ]);
     setPrompt("");
+    setIsLoading(true);
+
+    const data = await getChatResponse(prompt, chatId);
+    setChatId(data.message.chatId);
+    
+    setMessages(prev => {
+      const newMessages = [...prev];
+      newMessages[newMessages.length - 1] = { 
+        role: 'assistant', 
+        content: data.message.message[0].text 
+      };
+      return newMessages;
+    });
+    setIsLoading(false);
   }
 
   return (
@@ -31,7 +44,7 @@ function App() {
                 message.role === 'user' 
                   ? 'bg-blue-500 ml-auto' 
                   : 'bg-white mr-auto'
-              }`}>
+              } ${isLoading && message === messages[messages.length - 1] ? 'opacity-50' : ''}`}>
                 <p className={message.role === 'user' ? 'text-white' : 'text-gray-800'}>
                   {message.content}
                 </p>
