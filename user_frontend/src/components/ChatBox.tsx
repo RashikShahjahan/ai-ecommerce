@@ -4,8 +4,6 @@ import ChatInput from './ChatInput';
 import ChatArea from './ChatArea';
 import { AuthProps } from "../types";
 
-
-
 const Chatbox = ({ mode }: AuthProps) => {
 const [prompt, setPrompt] = useState("");
 const [chatId, setChatId] = useState("");
@@ -16,7 +14,9 @@ const [messages, setMessages] = useState<Array<{role: 'user' | 'assistant', cont
       ? '✧ Greetings, seeker of essences. What ethereal experience do you wish to capture today? ✧'
       : '✧ Welcome to the Essence Emporium. Please sign in to begin capturing ethereal experiences. ✧'
   }
-]);
+]
+);
+
 const [isLoading, setIsLoading] = useState(false);
 
 const handleSend = async () => {
