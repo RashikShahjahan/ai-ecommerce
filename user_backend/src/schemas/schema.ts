@@ -22,6 +22,7 @@ export const MessageContentSchema = z.object({
   text: z.string(),
 });
 
+
 export const ProductSearchResultSchema = z.object({
   name: z.string(),
   description: z.string(),
@@ -36,7 +37,6 @@ export const ToolResultSchema = z.discriminatedUnion('toolName', [
     toolName: z.literal('searchEssences'),
     data: z.array(ProductSearchResultSchema)
   }),
-  // Add more tools as needed
 ]);
 
 export const ChatResponseSchema = z.object({
@@ -53,6 +53,14 @@ export const ToolUseSchema = z.object({
 
 export const chatRequestSchema = z.object({
   query: z.string(),
+  chatId: z.string(),
+});
+
+export const messageRoleSchema = z.enum(["user", "assistant"]);
+
+export const messageSchema = z.object({
+  role: messageRoleSchema,
+  content: z.string(),
 });
 
 export const searchEssenceResponseSchema = z.array(EssenceSchema);
@@ -65,5 +73,6 @@ export type ChatRequest = z.infer<typeof chatRequestSchema>;
 export type SearchEssencesResponse = z.infer<typeof searchEssenceResponseSchema>;
 export type ProductSearchResult = z.infer<typeof ProductSearchResultSchema>;
 export type ToolResult = z.infer<typeof ToolResultSchema>;
-
+export type Message = z.infer<typeof messageSchema>;
+export type MessageRole = z.infer<typeof messageRoleSchema>;
 

@@ -1,16 +1,16 @@
 import express from "express";
 import cors from "cors";
-import { chatRequestSchema } from "./schemas/product";
-import { chat } from "./chatbot/app";
+import { chatRequestSchema } from "./schemas/schema";
+import { chat } from "./chatbot/chat";
 const app = express();
 app.use(express.json());
 app.use(cors());
 
 
 app.get("/api/chat", async (req, res) => {
-  const { query } = chatRequestSchema.parse(req.query);
+  const { query, chatId } = chatRequestSchema.parse(req.query);
   try {
-    const response = await chat(query);
+    const response = await chat(query, chatId);
     res.status(200).json({ message: response });
   } catch (error) {
     res.status(500).json({ error: "Internal server error" });
