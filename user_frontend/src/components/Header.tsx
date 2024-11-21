@@ -1,13 +1,13 @@
-import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react'
-import SignInButton from './signinbutton'
+import {  UserButton } from '@clerk/clerk-react'
+import SignInButton from './SignInButton'
+import { AuthProps } from '../types'
 
-const Header = () => {
+
+const Header = ({ mode }: AuthProps) => {
   return (
     <header className="absolute top-0 right-0 p-4 z-10">
-      <SignedOut>
-        <SignInButton/>
-      </SignedOut>
-      <SignedIn>
+      {mode === 'public' && <SignInButton />}
+      {mode === 'authenticated' && (
         <UserButton 
           appearance={{
             elements: {
@@ -16,7 +16,7 @@ const Header = () => {
             }
           }}
         />
-      </SignedIn>
+      )}
     </header>
   )
 }
