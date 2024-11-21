@@ -34,7 +34,7 @@ export async function chat(prompt: string, chatId: string): Promise<ChatResponse
                 messages: {
                     create: [{ content: prompt, role: "user" }]
                 },
-                userId: "1"
+                userId: (await prisma.user.findFirst())?.id || ""
             }
         });
         chatId = newChat.id;
@@ -102,15 +102,21 @@ export async function chat(prompt: string, chatId: string): Promise<ChatResponse
             messages: messages
         });
 
+        console.log(finalMessage.content[0]);
+
+
         return ChatResponseSchema.parse({
+            chatId: chatId,
             message: [finalMessage.content[0]],
             toolResults: [{
                 toolName: toolUse.name,
                 data: toolResult.map(essence => ({
+                    id: essence.id,
                     name: essence.name,
                     description: essence.description,
                     price: essence.price,
                     stock: essence.stock,
+                    distance: essence.distance,
                     similarity: Number((1 - essence.distance).toFixed(2))
                 }))
             }]
@@ -118,6 +124,7 @@ export async function chat(prompt: string, chatId: string): Promise<ChatResponse
     }
 
     return ChatResponseSchema.parse({
+        chatId: chatId,
         message: message.content,
         toolResults: null
     });

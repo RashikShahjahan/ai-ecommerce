@@ -25,6 +25,7 @@ export const ToolResultSchema = z.discriminatedUnion('toolName', [
 ]);
 
 export const ChatResponseSchema = z.object({
+  chatId: z.string(),
   message: z.array(MessageContentSchema),
   toolResults: z.array(ToolResultSchema).nullable(),
 });
