@@ -7,7 +7,7 @@ function App() {
   const [messages, setMessages] = useState<Array<{role: 'user' | 'assistant', content: string}>>([
     {
       role: 'assistant',
-      content: '👋 Hello! I\'m your AI assistant. How can I help you today?'
+      content: '✧ Greetings, seeker of essences. What ethereal experience do you wish to capture today? ✧'
     }
   ]);
   const [isLoading, setIsLoading] = useState(false);
@@ -35,17 +35,28 @@ function App() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-100 p-4">
-      <div className="flex-1 overflow-y-auto mb-4 space-y-4">
-        <div className="flex flex-col space-y-2">
+    <div className="flex flex-col h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-4 md:p-6">
+      <header className="text-center mb-6">
+        <h1 className="text-4xl font-serif bg-clip-text text-transparent bg-gradient-to-r from-purple-300 via-purple-200 to-purple-300">
+          Essence Emporium
+        </h1>
+        <p className="text-purple-200/70 font-serif">✧ Bottling Ethereal Experiences Since MMXXIV ✧</p>
+      </header>
+
+      <div className="flex-1 overflow-y-auto mb-4 space-y-4 scrollbar-thin scrollbar-thumb-purple-800 scrollbar-track-transparent">
+        <div className="flex flex-col space-y-3">
           {messages.map((message, index) => (
             <div key={index} className="flex items-start justify-end">
-              <div className={`rounded-lg p-3 max-w-[80%] shadow-sm ${
+              <div className={`rounded-lg p-4 max-w-[80%] shadow-[0_0_10px_rgba(139,92,246,0.15)] transition-all duration-300 ${
                 message.role === 'user' 
-                  ? 'bg-blue-500 ml-auto' 
-                  : 'bg-white mr-auto'
-              } ${isLoading && message === messages[messages.length - 1] ? 'opacity-50' : ''}`}>
-                <p className={message.role === 'user' ? 'text-white' : 'text-gray-800'}>
+                  ? 'bg-gradient-to-r from-purple-900/30 to-purple-800/30 border border-purple-500/20 ml-auto' 
+                  : 'bg-gray-800/90 backdrop-blur-sm border border-purple-300/10 mr-auto'
+              } ${isLoading && message === messages[messages.length - 1] ? 'opacity-50 animate-pulse' : ''}`}>
+                <p className={`${
+                  message.role === 'user' 
+                    ? 'text-purple-100' 
+                    : 'text-gray-200'
+                } leading-relaxed font-light`}>
                   {message.content}
                 </p>
               </div>
@@ -54,19 +65,26 @@ function App() {
         </div>
       </div>
 
-      <div className="flex items-center gap-2 bg-white p-4 rounded-lg shadow-sm">
+      <div className="flex items-center gap-3 bg-gray-800/50 backdrop-blur-sm p-4 rounded-lg border border-purple-500/20 shadow-[0_0_15px_rgba(139,92,246,0.1)]">
         <input
           type="text"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          className="flex-1 px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Type your message..."
+          onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+          className="flex-1 px-6 py-3 bg-gray-900/30 text-purple-100 rounded-md border border-purple-500/20 
+            focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-transparent transition-all
+            placeholder-purple-300/30"
+          placeholder="Whisper your desires into the void..."
         />
         <button
           onClick={handleSend}
-          className="bg-blue-500 text-white px-6 py-2 rounded-full hover:bg-blue-600 transition-colors"
+          disabled={isLoading}
+          className="bg-gradient-to-r from-purple-900/80 to-purple-800/80 text-purple-100 px-8 py-3 rounded-md 
+            hover:from-purple-800/80 hover:to-purple-700/80 transition-all transform hover:scale-105 
+            disabled:opacity-50 disabled:hover:scale-100 font-medium border border-purple-500/20
+            shadow-[0_0_10px_rgba(139,92,246,0.1)]"
         >
-          Send
+          {isLoading ? "✧..." : "Manifest"}
         </button>
       </div>
     </div>
