@@ -32,7 +32,7 @@ export async function storeEssenceEmbedding(essenceId: string, content: string):
   `;
 }
 
-export async function findSimilarDocuments(query: string, limit: number = 1): Promise<any[]> {
+export async function findSimilarDocuments(query: string, limit: number = 3): Promise<any[]> {
   const queryEmbedding = await generateEmbedding(query);
   const vectorString = pgvector.toSql(queryEmbedding);
   const result = await prisma.$queryRaw<Array<any>>`
