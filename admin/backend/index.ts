@@ -1,24 +1,24 @@
-import express from 'express';
-import cors from 'cors';
+import express from "express";
+import cors from "cors";
+import prisma from "../../user_backend/prisma/client"; // Note - this will need to be changed in the future
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001; // Changed from 3000 to avoid conflict with user backend
 
-// Apply CORS middleware
 app.use(cors());
-
-// Body parser middleware (JSON)
 app.use(express.json());
 
-// Example API route
-app.get('/api', (req, res) => {
-    console.log('API endpoint hit');
-    res.json({ message: 'Hello from the API!' });
+// Get all essences
+app.get("/api/essences", async (req, res) => {
+  try {
+    const essences = await prisma.essence.findMany();
+    res.json(essences);
+  } catch (error) {
+    console.error("Error fetching essences:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
-console.log("Hello from Bun!");
-
-// Start server
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Admin server is running on http://localhost:${PORT}`);
 });
