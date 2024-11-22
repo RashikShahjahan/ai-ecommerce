@@ -25,7 +25,7 @@ app.get("/api/orders", async (req, res) => {
     const formattedOrders = orders.map((order) => ({
       id: order.id,
       userId: order.userId,
-      userName: order.user.clerkId, // Note: You might want to get actual name from Clerk
+      userName: "John Doe", // TODO: Integrate with Clerk to get actual user names
       products: order.items.map((item) => ({
         name: item.name,
         quantity: 1, // Note: Current schema doesn't track quantity
