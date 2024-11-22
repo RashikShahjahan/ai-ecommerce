@@ -9,13 +9,10 @@ export const EssenceSchema = z.object({
   distance: z.number(),
 });
 
-
 export const MessageContentSchema = z.object({
   type: z.string(),
   text: z.string(),
 });
-
-
 
 export const ToolResultSchema = z.discriminatedUnion('toolName', [
   z.object({
@@ -49,6 +46,13 @@ export const messageSchema = z.object({
   content: z.string(),
 });
 
+export const userSchema = z.object({
+  id: z.string(),
+  email: z.string(),
+  name: z.string(),
+  address: z.string(),
+});
+
 
 export type Essence = z.infer<typeof EssenceSchema>;
 export type ChatResponse = z.infer<typeof ChatResponseSchema>;
@@ -57,4 +61,5 @@ export type ChatRequest = z.infer<typeof chatRequestSchema>;
 export type ToolResult = z.infer<typeof ToolResultSchema>;
 export type Message = z.infer<typeof messageSchema>;
 export type MessageRole = z.infer<typeof messageRoleSchema>;
+export type User = z.infer<typeof userSchema>;
 

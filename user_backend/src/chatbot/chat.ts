@@ -26,7 +26,7 @@ async function processToolCall(toolName: string, toolInput: Record<string, unkno
     }
 }
 
-export async function chat(prompt: string, chatId: string): Promise<ChatResponse> {
+export async function chat(prompt: string, chatId: string, userId: string): Promise<ChatResponse> {
     // Create new chat if needed
     if (chatId === "") {
         const newChat = await prisma.chatHistory.create({
@@ -34,7 +34,7 @@ export async function chat(prompt: string, chatId: string): Promise<ChatResponse
                 messages: {
                     create: [{ content: prompt, role: "user" }]
                 },
-                userId: (await prisma.user.findFirst())?.id || ""
+                userId: userId
             }
         });
         chatId = newChat.id;
