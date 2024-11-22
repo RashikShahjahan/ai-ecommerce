@@ -132,7 +132,7 @@ function Orders() {
                                 <td className="px-6 py-4 text-right text-gray-200">
                                     ${order.totalAmount.toFixed(2)}
                                 </td>
-                                <td className="px-6 py-4 text-center flex justify-center">
+                                <td className="px-6 py-4 text-center">
                                     <span className={`inline-flex justify-center px-3 py-1 text-sm rounded-full ${{
                                         pending: 'bg-yellow-500/20 text-yellow-200',
                                         processing: 'bg-blue-500/20 text-blue-200',
