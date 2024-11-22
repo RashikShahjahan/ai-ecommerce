@@ -1,6 +1,11 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
-// Mock data type definition
+// TODO: Future improvements needed:
+// 1. Add proper user names from Clerk instead of using clerkId
+// 2. Add actual order creation date to the schema
+// 3. Implement proper quantity tracking in the schema
+
 interface Order {
     id: string;
     userId: string;
@@ -15,64 +20,61 @@ interface Order {
     createdAt: string;
 }
 
-// Mock data
-const mockOrders: Order[] = [
-    {
-        id: 'ORD-001',
-        userId: 'USR-001',
-        userName: 'John Doe',
-        products: [
-            { name: 'Ethereal Essence', quantity: 2, price: 29.99 },
-            { name: 'Mystic Mist', quantity: 1, price: 19.99 }
-        ],
-        totalAmount: 79.97,
-        status: 'completed',
-        createdAt: '2024-03-15T10:30:00Z'
-    },
-    {
-        id: 'ORD-002',
-        userId: 'USR-002',
-        userName: 'Jane Smith',
-        products: [
-            { name: 'Celestial Crystal', quantity: 1, price: 49.99 }
-        ],
-        totalAmount: 49.99,
-        status: 'pending',
-        createdAt: '2024-03-16T14:20:00Z'
-    },
-    {
-        id: 'ORD-003',
-        userId: 'USR-003',
-        userName: 'Alice Johnson',
-        products: [
-            { name: 'Ethereal Essence', quantity: 3, price: 29.99 },
-            { name: 'Mystic Mist', quantity: 2, price: 19.99 }
-        ],
-        totalAmount: 129.95,
-        status: 'processing',
-        createdAt: '2024-03-16T15:45:00Z'
-    }
-];
-
 function Orders() {
-    // Add state for filters
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [searchQuery, setSearchQuery] = useState<string>('');
 
+    useEffect(() => {
+        const fetchOrders = async () => {
+            try {
+                const response = await axios.get('http://localhost:3001/api/orders');
+                setOrders(response.data);
+                setError(null);
+            } catch (error) {
+                console.error('Failed to fetch orders:', error);
+                setError('Failed to load orders. Please try again later.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchOrders();
+    }, []);
+
     // Filter orders based on status and search query
-    const filteredOrders = mockOrders.filter(order => {
+    const filteredOrders = orders.filter(order => {
         const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-        const matchesSearch = order.userName.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesSearch = searchQuery === '' ||
+            (order.userName && order.userName.toLowerCase().includes(searchQuery.toLowerCase()));
         return matchesStatus && matchesSearch;
     });
 
+    if (loading) {
+        return (
+            <div className="p-6 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 min-h-screen">
+                <div className="text-purple-200">Loading orders...</div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="p-6 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 min-h-screen">
+                <div className="text-red-400">{error}</div>
+            </div>
+        );
+    }
+
+    // Rest of the component remains the same as your original code
     return (
         <div className="p-6 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 min-h-screen">
             <h2 className="text-4xl font-serif bg-clip-text text-transparent bg-gradient-to-r from-purple-300 via-purple-200 to-purple-300 mb-8">
                 Order Management
             </h2>
 
-            {/* Add filter controls */}
             <div className="mb-6 flex gap-4 items-center">
                 <div className="flex items-center gap-2">
                     <label className="text-purple-200">Status:</label>
@@ -130,14 +132,13 @@ function Orders() {
                                 <td className="px-6 py-4 text-right text-gray-200">
                                     ${order.totalAmount.toFixed(2)}
                                 </td>
-                                <td className="px-6 py-4 text-center flex justify-center">
+                                <td className="px-6 py-4 text-center">
                                     <span className={`inline-flex justify-center px-3 py-1 text-sm rounded-full ${{
                                         pending: 'bg-yellow-500/20 text-yellow-200',
                                         processing: 'bg-blue-500/20 text-blue-200',
                                         completed: 'bg-green-500/20 text-green-200',
                                         cancelled: 'bg-red-500/20 text-red-200'
-                                    }[order.status]
-                                        }`}>
+                                    }[order.status]}`}>
                                         {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                                     </span>
                                 </td>
