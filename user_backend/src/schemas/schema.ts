@@ -1,31 +1,50 @@
 import { z } from "zod";
 
-export const EssenceSchema = z.object({
+// Base schemas for reuse
+const baseItemSchema = z.object({
   id: z.string(),
   name: z.string(),
   description: z.string(),
   price: z.number(),
   stock: z.number(),
-  distance: z.number(),
 });
 
+// Essence schemas
+export const EssenceSchema = baseItemSchema;
+export const EssenceResultSchema = baseItemSchema.extend({
+  similarity: z.number(),
+});
+
+// Cart schemas
+export const CartSchema = z.object({
+  id: z.string(),
+  userId: z.string(),
+  items: z.array(EssenceSchema),
+  total: z.number(),
+});
+
+// Message schemas
+export const MessageRoleSchema = z.enum(["user", "assistant"]);
 export const MessageContentSchema = z.object({
   type: z.string(),
   text: z.string(),
 });
+export const MessageSchema = z.object({
+  role: MessageRoleSchema,
+  content: z.string(),
+});
 
+// Tool schemas
 export const ToolResultSchema = z.discriminatedUnion('toolName', [
   z.object({
     toolName: z.literal('searchEssences'),
-    data: z.array(EssenceSchema)
+    data: z.array(EssenceResultSchema)
   }),
+  z.object({
+    toolName: z.literal('addEssenceToCart'),
+    data: CartSchema
+  })
 ]);
-
-export const ChatResponseSchema = z.object({
-  chatId: z.string(),
-  message: z.array(MessageContentSchema),
-  toolResults: z.array(ToolResultSchema).nullable(),
-});
 
 export const ToolUseSchema = z.object({
   type: z.literal('tool_use'),
@@ -34,30 +53,29 @@ export const ToolUseSchema = z.object({
   input: z.record(z.any()),
 });
 
-export const chatRequestSchema = z.object({
+// Chat schemas
+export const ChatRequestSchema = z.object({
   query: z.string(),
-  chatId: z.string(),
 });
 
-export const messageRoleSchema = z.enum(["user", "assistant"]);
-
-export const messageSchema = z.object({
-  role: messageRoleSchema,
-  content: z.string(),
+export const ChatResponseSchema = z.object({
+  message: z.array(MessageContentSchema),
+  toolResults: z.array(ToolResultSchema).nullable(),
 });
 
-export const userSchema = z.object({
+// User schema
+export const UserSchema = z.object({
   id: z.string(),
   clerkId: z.string(),
 });
 
-
-export type Essence = z.infer<typeof EssenceSchema>;
+// Type exports
+export type EssenceResult = z.infer<typeof EssenceResultSchema>;
 export type ChatResponse = z.infer<typeof ChatResponseSchema>;
 export type ToolUse = z.infer<typeof ToolUseSchema>;
-export type ChatRequest = z.infer<typeof chatRequestSchema>;
+export type ChatRequest = z.infer<typeof ChatRequestSchema>;
 export type ToolResult = z.infer<typeof ToolResultSchema>;
-export type Message = z.infer<typeof messageSchema>;
-export type MessageRole = z.infer<typeof messageRoleSchema>;
-export type User = z.infer<typeof userSchema>;
-
+export type Message = z.infer<typeof MessageSchema>;
+export type MessageRole = z.infer<typeof MessageRoleSchema>;
+export type User = z.infer<typeof UserSchema>;
+export type Cart = z.infer<typeof CartSchema>;

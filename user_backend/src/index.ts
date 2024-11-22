@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { chatRequestSchema} from "./schemas/schema";
+import { ChatRequestSchema, ChatResponseSchema } from "./schemas/schema";
 import { chat } from "./chatbot/chat";
 import {requireAuth, getAuth } from '@clerk/express'
 import prisma from "../prisma/client";
@@ -48,11 +48,14 @@ app.use(async (req, res, next) => {
   }
 });
 
-app.get("/api/chat", async (req, res) => {
-  const { query, chatId } = chatRequestSchema.parse(req.query);
+app.post("/api/chat", async (req, res) => {
   try {
-    const response = await chat(query, chatId, req.userId);
-    res.status(200).json({ message: response });
+    const { query } = ChatRequestSchema.parse(req.body);
+    const rawResponse = await chat(query, req.userId);
+    console.log(rawResponse);
+    const validatedResponse = ChatResponseSchema.parse(rawResponse);
+    
+    res.status(200).json({ message: validatedResponse });
   } catch (error) {
     res.status(500).json({ error: "Internal server error" });
     console.error(error);

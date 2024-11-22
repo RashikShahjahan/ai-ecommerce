@@ -42,9 +42,9 @@ export async function findSimilarDocuments(query: string, limit: number = 3): Pr
       description,
       price,
       stock,
-      embedding <-> ${vectorString}::vector as distance
+      1 - (embedding <-> ${vectorString}::vector) as similarity
     FROM "Essence"
-    ORDER BY distance ASC
+    ORDER BY similarity DESC
     LIMIT ${limit}
   `;
 
