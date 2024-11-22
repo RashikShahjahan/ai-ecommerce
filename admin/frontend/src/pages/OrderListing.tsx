@@ -14,6 +14,7 @@ interface Order {
         id: string;
         name: string;
         price: number;
+        quantity: number; // TODO: Add quantity to schema
     }[];
     totalPrice: number;
     orderStatus: string;
