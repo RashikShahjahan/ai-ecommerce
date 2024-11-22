@@ -12,31 +12,7 @@ async function main() {
   await prisma.user.deleteMany()
   console.log('Cleared existing data from database')
 
-  // Create sample users
-  const users = [
-    {
-      name: "John Doe",
-      email: "john@example.com",
-      address: "123 Main St, Anytown, USA"
-    },
-    {
-      name: "Jane Smith",
-      email: "jane@example.com",
-      address: "456 Oak Ave, Somewhere, USA"
-    },
-    {
-      name: "Bob Johnson",
-      email: "bob@example.com",
-      address: "789 Pine Rd, Elsewhere, USA"
-    }
-  ]
 
-  for (const user of users) {
-    await prisma.user.create({
-      data: user
-    })
-    console.log(`Created user: ${user.name}`)
-  }
 
   const essences = [
     {
