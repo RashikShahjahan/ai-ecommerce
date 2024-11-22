@@ -10,13 +10,14 @@ interface Order {
     id: string;
     userId: string;
     userName: string;
-    products: {
+    items: {
+        id: string;
         name: string;
-        quantity: number;
         price: number;
+        quantity: number; // TODO: Add quantity to schema
     }[];
-    totalAmount: number;
-    status: 'pending' | 'processing' | 'completed' | 'cancelled';
+    totalPrice: number;
+    orderStatus: string;
     createdAt: string;
 }
 
@@ -46,7 +47,7 @@ function Orders() {
 
     // Filter orders based on status and search query
     const filteredOrders = orders.filter(order => {
-        const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+        const matchesStatus = statusFilter === 'all' || order.orderStatus === statusFilter;
         const matchesSearch = searchQuery === '' ||
             (order.userName && order.userName.toLowerCase().includes(searchQuery.toLowerCase()));
         return matchesStatus && matchesSearch;
@@ -122,7 +123,7 @@ function Orders() {
                                 <td className="px-6 py-4 text-gray-200">{order.userName}</td>
                                 <td className="px-6 py-4 text-gray-200">
                                     <div className="space-y-1">
-                                        {order.products.map((product, idx) => (
+                                        {order.items.map((product, idx) => (
                                             <div key={idx} className="text-sm">
                                                 {product.quantity}x {product.name}
                                             </div>
@@ -130,7 +131,7 @@ function Orders() {
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 text-right text-gray-200">
-                                    ${order.totalAmount.toFixed(2)}
+                                    ${order.totalPrice.toFixed(2)}
                                 </td>
                                 <td className="px-6 py-4 text-center">
                                     <span className={`inline-flex justify-center px-3 py-1 text-sm rounded-full ${{
@@ -138,8 +139,8 @@ function Orders() {
                                         processing: 'bg-blue-500/20 text-blue-200',
                                         completed: 'bg-green-500/20 text-green-200',
                                         cancelled: 'bg-red-500/20 text-red-200'
-                                    }[order.status]}`}>
-                                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                    }[order.orderStatus]}`}>
+                                        {order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1)}
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 text-gray-200">
