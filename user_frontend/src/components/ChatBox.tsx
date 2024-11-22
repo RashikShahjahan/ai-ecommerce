@@ -6,7 +6,6 @@ import { AuthProps } from "../types";
 
 const Chatbox = ({ mode }: AuthProps) => {
 const [prompt, setPrompt] = useState("");
-const [chatId, setChatId] = useState("");
 const [messages, setMessages] = useState<Array<{role: 'user' | 'assistant', content: string}>>([
   {
     role: 'assistant',
@@ -27,8 +26,8 @@ const handleSend = async () => {
   setPrompt("");
   setIsLoading(true);
 
-  const data = await getChatResponse(prompt, chatId);
-  setChatId(data.message.chatId);
+  const data = await getChatResponse(prompt);
+  console.log(data);
   
   setMessages(prev => {
     const newMessages = [...prev];

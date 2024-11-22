@@ -14,12 +14,9 @@ export const setAuthToken = (token: string) => {
     });
 };
 
-export const getChatResponse = async (query: string, chatId: string) => {    
-    const response = await client.get("/chat", {
-        params: {
-            query,
-            chatId,
-        }
+export const getChatResponse = async (query: string) => {    
+    const response = await client.post("/chat", {
+        query,
     });
     return response.data;
 };

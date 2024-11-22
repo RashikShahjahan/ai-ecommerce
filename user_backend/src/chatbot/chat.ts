@@ -1,14 +1,13 @@
 import { Anthropic } from '@anthropic-ai/sdk';
-import { PRODUCT_SEARCH_TOOL } from './tools/product';
+import { ADD_ESSENSE_TO_CART_TOOL, ESSENCE_SEARCH_TOOL } from './tools/tool';
+import { addEssenceToCart } from './tools/cart';
 import { findSimilarDocuments } from './utils/embeddings';
 import type { MessageParam, TextBlockParam } from '@anthropic-ai/sdk/src/resources/messages.js';
 import  { 
-    type Essence, 
     type ChatResponse, 
     ToolUseSchema,
-    ChatResponseSchema,
-    type Message,
-    type MessageRole
+    type MessageRole,
+    type ToolResult
 } from '../schemas/schema';
 import prisma from '../../prisma/client';
 
@@ -16,67 +15,107 @@ const client = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY 
 });
 
-async function processToolCall(toolName: string, toolInput: Record<string, unknown>): Promise<Essence[]> {
+async function processToolCall(toolName: string, toolInput: Record<string, unknown>, userId: string): Promise<ToolResult> {
     switch (toolName) {
-        case "searchEssences":
+        case "searchEssences": {
             const query = toolInput.query;
-            return await findSimilarDocuments(query as string);
+            const results = await findSimilarDocuments(query as string);
+            return {
+                toolName: "searchEssences",
+                data: results
+            };
+        }
+        case "addEssenceToCart": {
+            const query = toolInput.query;
+            const results = await findSimilarDocuments(query as string, 1);
+            const essenceId = results[0].id;
+
+            const cart = await addEssenceToCart(essenceId, userId);
+            return {
+                toolName: "addEssenceToCart",
+                data: cart
+            };
+        }
         default:
             throw new Error(`Unknown tool: ${toolName}`);
     }
 }
 
-export async function chat(prompt: string, chatId: string, userId: string): Promise<ChatResponse> {
-    // Create new chat if needed
-    if (chatId === "") {
-        const newChat = await prisma.chatHistory.create({
-            data: {
-                messages: {
-                    create: [{ content: prompt, role: "user" }]
-                },
-                userId: userId
-            }
-        });
-        chatId = newChat.id;
+async function formatToolResult(toolResult: ToolResult): Promise<TextBlockParam> {
+    switch (toolResult.toolName) {
+        case "searchEssences":
+            return {
+                type: "text",
+                text: `${toolResult.data.map(essence => `
+                    Name: ${essence.name}
+                    Description: ${essence.description}
+                    Price: ${essence.price}
+                    Stock: ${essence.stock}
+                    Similarity: ${Number((1 - essence.similarity).toFixed(2))}
+                `).join('\n')}`
+            };
+        case "addEssenceToCart":
+            return {
+                type: "text",
+                text: `Added to cart:
+                    ${toolResult.data.items.map(item => `
+                    - ${item.name}
+                      Price: $${item.price}
+                      Subtotal: $${item.price}
+                    `).join('')}
+                    -------------------------
+                    Total Items: ${toolResult.data.items.length}
+                    Cart Total: $${toolResult.data.total}`
+            };
+        default:
+            throw new Error(`Unknown tool result type: ${toolResult}`);
     }
+}
 
-    const chatHistory = await prisma.chatHistory.findUnique({
-        where: { id: chatId },
-        select: { messages: true }
+export async function chat(prompt: string, userId: string): Promise<ChatResponse> {
+    // Get previous messages for this user
+    const previousMessages = await prisma.message.findMany({
+        where: { userId: userId },
+        orderBy: { id: 'asc' },
+        select: { role: true, content: true }
     });
 
-    let previousMessages: Message[] = [];
-    if (chatHistory) {
-        previousMessages = chatHistory.messages.map((message) => ({ 
-            role: message.role as MessageRole, 
-            content: message.content 
-        }));
-    }
+    // Save the new user message
+    await prisma.message.create({
+        data: {
+            content: prompt,
+            role: "user",
+            userId: userId
+        }
+    });
+
+    const messages: MessageParam[] = [
+        ...previousMessages.map(msg => ({ 
+            role: msg.role as MessageRole, 
+            content: msg.content 
+        })),
+        { role: "user", content: prompt }
+    ];
 
     const message = await client.messages.create({
         model: "claude-3-5-sonnet-20241022",
         max_tokens: 1024,
-        tools: [PRODUCT_SEARCH_TOOL],
-        messages: [...previousMessages, { role: "user", content: prompt }],
+        tools: [ESSENCE_SEARCH_TOOL, ADD_ESSENSE_TO_CART_TOOL],
+        messages: messages,
     });
 
     if (message.stop_reason === "tool_use") {
         const toolUseContent = message.content.find(c => c.type === "tool_use");
         const toolUse = ToolUseSchema.parse(toolUseContent);
-        const toolResult = await processToolCall(toolUse.name, toolUse.input);
+        const toolResult = await processToolCall(toolUse.name, toolUse.input, userId);
         
-        const formattedToolResult: TextBlockParam = {
-            type: "text",
-            text: `${toolResult.map(essence => `
-                Name: ${essence.name}
-                Description: ${essence.description}
-                Price: ${essence.price}
-                Stock: ${essence.stock}
-                Similarity: ${Number((1 - essence.distance).toFixed(2))}
-            `).join('\n')}`
-        };
+        const formattedToolResult: TextBlockParam = await formatToolResult(toolResult);
 
         const messages: MessageParam[] = [
+            ...previousMessages.map(msg => ({ 
+                role: msg.role as MessageRole, 
+                content: msg.content 
+            })),
             { role: "user", content: prompt },
             { role: "assistant", content: message.content },
             { 
@@ -98,35 +137,26 @@ export async function chat(prompt: string, chatId: string, userId: string): Prom
         const finalMessage = await client.messages.create({
             model: "claude-3-5-sonnet-20241022",
             max_tokens: 1024,
-            tools: [PRODUCT_SEARCH_TOOL],
+            tools: [ESSENCE_SEARCH_TOOL, ADD_ESSENSE_TO_CART_TOOL],
             messages: messages
         });
 
-        console.log(finalMessage.content[0]);
 
-
-        return ChatResponseSchema.parse({
-            chatId: chatId,
-            message: [finalMessage.content[0]],
-            toolResults: [{
-                toolName: toolUse.name,
-                data: toolResult.map(essence => ({
-                    id: essence.id,
-                    name: essence.name,
-                    description: essence.description,
-                    price: essence.price,
-                    stock: essence.stock,
-                    distance: essence.distance,
-                    similarity: Number((1 - essence.distance).toFixed(2))
-                }))
-            }]
-        });
+        return {
+            message: finalMessage.content.map(block => ({
+                type: block.type,
+                text: 'text' in block ? block.text : JSON.stringify(block)
+            })),
+            toolResults: toolResult ? [toolResult] : null
+        };
     }
 
-    return ChatResponseSchema.parse({
-        chatId: chatId,
-        message: message.content,
+    return {
+        message: message.content.map(block => ({
+            type: block.type,
+            text: 'text' in block ? block.text : JSON.stringify(block)
+        })),
         toolResults: null
-    });
+    };
 }
 
