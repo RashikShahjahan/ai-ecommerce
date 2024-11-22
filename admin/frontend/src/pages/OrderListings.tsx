@@ -1,4 +1,4 @@
-
+import React, { useState } from 'react';
 
 // Mock data type definition
 interface Order {
@@ -55,11 +55,51 @@ const mockOrders: Order[] = [
 ];
 
 function Orders() {
+    // Add state for filters
+    const [statusFilter, setStatusFilter] = useState<string>('all');
+    const [searchQuery, setSearchQuery] = useState<string>('');
+
+    // Filter orders based on status and search query
+    const filteredOrders = mockOrders.filter(order => {
+        const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+        const matchesSearch = order.userName.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesStatus && matchesSearch;
+    });
+
     return (
         <div className="p-6 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 min-h-screen">
             <h2 className="text-4xl font-serif bg-clip-text text-transparent bg-gradient-to-r from-purple-300 via-purple-200 to-purple-300 mb-8">
                 Order Management
             </h2>
+
+            {/* Add filter controls */}
+            <div className="mb-6 flex gap-4 items-center">
+                <div className="flex items-center gap-2">
+                    <label className="text-purple-200">Status:</label>
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="bg-gray-800 text-gray-200 px-3 py-2 rounded-lg border border-purple-500/20 focus:outline-none focus:border-purple-500/50"
+                    >
+                        <option value="all">All</option>
+                        <option value="pending">Pending</option>
+                        <option value="processing">Processing</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <label className="text-purple-200">Search:</label>
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search by customer name..."
+                        className="bg-gray-800 text-gray-200 px-3 py-2 rounded-lg border border-purple-500/20 focus:outline-none focus:border-purple-500/50 w-64"
+                    />
+                </div>
+            </div>
 
             <div className="overflow-x-auto shadow-lg rounded-lg border border-purple-500/20">
                 <table className="w-full table-auto">
@@ -74,7 +114,7 @@ function Orders() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-purple-500/10">
-                        {mockOrders.map((order) => (
+                        {filteredOrders.map((order) => (
                             <tr key={order.id} className="bg-gray-800/50 hover:bg-gray-800/70 transition-colors">
                                 <td className="px-6 py-4 text-purple-200">{order.id}</td>
                                 <td className="px-6 py-4 text-gray-200">{order.userName}</td>
