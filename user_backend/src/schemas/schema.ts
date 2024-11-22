@@ -48,9 +48,7 @@ export const messageSchema = z.object({
 
 export const userSchema = z.object({
   id: z.string(),
-  email: z.string(),
-  name: z.string(),
-  address: z.string(),
+  clerkId: z.string(),
 });
 
 
