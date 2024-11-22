@@ -21,19 +21,10 @@ app.get("/api/orders", async (req, res) => {
       },
     });
 
-    // Transform the data to match the frontend structure
     const formattedOrders = orders.map((order) => ({
-      id: order.id,
-      userId: order.userId,
-      userName: "John Doe", // TODO: Integrate with Clerk to get actual user names
-      products: order.items.map((item) => ({
-        name: item.name,
-        quantity: 1, // Note: Current schema doesn't track quantity
-        price: item.price,
-      })),
-      totalAmount: order.totalPrice,
-      status: order.orderStatus,
-      createdAt: new Date().toISOString(), // Note: Adding current date since schema doesn't have createdAt
+      ...order,
+      userName: "John Doe", // Only transformation needed for now
+      createdAt: new Date().toISOString(), // Temporary fallback date since we don't have it in schema
     }));
 
     res.json(formattedOrders);
