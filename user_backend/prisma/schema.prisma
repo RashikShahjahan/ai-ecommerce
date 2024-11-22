@@ -5,73 +5,67 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
-  binaryTargets = ["native", "debian-openssl-3.0.x"]
+  provider        = "prisma-client-js"
   previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
   extensions = [vector]
 }
 
 model Essence {
-  id            String           @id @default(cuid())
-  name          String          // e.g., "Teenage Angst Premium", "Midlife Crisis Deluxe", "Monday Morning Dread"
-  description   String          // e.g., "Capture the authentic aroma of your parent's disappointment, with subtle notes of slammed doors and dramatic sighs"
-  orders        Order[]
-  cart          Cart?          @relation(fields: [cartId], references: [id])
-  cartId        String?
-  price         Float
-  stock         Int
-  embedding     Unsupported("vector(1024)")?
+  id          String                       @id @default(cuid())
+  name        String // e.g., "Teenage Angst Premium", "Midlife Crisis Deluxe", "Monday Morning Dread"
+  description String // e.g., "Capture the authentic aroma of your parent's disappointment, with subtle notes of slammed doors and dramatic sighs"
+  orders      Order[]
+  cart        Cart?                        @relation(fields: [cartId], references: [id])
+  cartId      String?
+  price       Float
+  stock       Int
+  embedding   Unsupported("vector(1024)")?
 }
 
-
-
 model Cart {
-  id        String     @id @default(cuid())
-  user      User       @relation(fields: [userId], references: [id])
-  userId    String     @unique
-  items     Essence[]
+  id     String    @id @default(cuid())
+  user   User      @relation(fields: [userId], references: [id])
+  userId String    @unique
+  items  Essence[]
 }
 
 model User {
-  id        String    @id @default(cuid())
-  name      String
-  email     String    @unique
-  address   String
-  orders    Order[]
-  cart      Cart?
-  cartId    String?
+  id          String        @id @default(cuid())
+  name        String
+  email       String        @unique
+  address     String
+  orders      Order[]
+  cart        Cart?
+  cartId      String?
   chatHistory ChatHistory[]
 }
 
 model Order {
-  id              String    @id @default(cuid())
-  user            User      @relation(fields: [userId], references: [id])
-  userId          String
-  totalPrice      Float
-  paymentStatus   String    @default("pending")
-  orderStatus     String    @default("pending")
-  items           Essence[]
+  id            String    @id @default(cuid())
+  user          User      @relation(fields: [userId], references: [id])
+  userId        String
+  totalPrice    Float
+  paymentStatus String    @default("pending")
+  orderStatus   String    @default("pending")
+  items         Essence[]
 }
 
 model ChatHistory {
-  id              String    @id @default(cuid())
-  user            User      @relation(fields: [userId], references: [id])
-  userId          String
-  messages        Message[]
+  id       String    @id @default(cuid())
+  user     User      @relation(fields: [userId], references: [id])
+  userId   String
+  messages Message[]
 }
 
 model Message {
-  id              String    @id @default(cuid())
-  role            String
-  content         String
-  chatHistory     ChatHistory @relation(fields: [chatHistoryId], references: [id])
-  chatHistoryId   String
+  id            String      @id @default(cuid())
+  role          String
+  content       String
+  chatHistory   ChatHistory @relation(fields: [chatHistoryId], references: [id])
+  chatHistoryId String
 }
-
-
-
