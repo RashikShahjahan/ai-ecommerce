@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    # Install dependencies for all projects
+    - name: Install Admin Frontend Dependencies
+      working-directory: ./admin/frontend
+      run: bun install
+
+    - name: Install Admin Backend Dependencies
+      working-directory: ./admin/backend
+      run: bun install
+
+    - name: Install User Frontend Dependencies
+      working-directory: ./user_frontend
+      run: bun install
+
+    - name: Install User Backend Dependencies
+      working-directory: ./user_backend
+      run: bun install
+
+    # Run TypeScript checks
+    - name: TypeScript Check - Admin Frontend
+      working-directory: ./admin/frontend
+      run: bun run tsc --noEmit
+
+    - name: TypeScript Check - Admin Backend
+      working-directory: ./admin/backend
+      run: bun run tsc --noEmit
+
+    - name: TypeScript Check - User Frontend
+      working-directory: ./user_frontend
+      run: bun run tsc --noEmit
+
+    - name: TypeScript Check - User Backend
+      working-directory: ./user_backend
+      run: bun run tsc --noEmit
+
+    # Build projects
+    - name: Build Admin Frontend
+      working-directory: ./admin/frontend
+      run: bun run build
+
+    - name: Build User Frontend
+      working-directory: ./user_frontend
+      run: bun run build
