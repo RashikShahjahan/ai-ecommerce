@@ -24,3 +24,13 @@ export const ADD_ESSENSE_TO_CART_TOOL = {
     required: ["query"]
   }
 };
+
+export const GET_CART_TOOL = {
+  name: "getCart",
+  description: "This tool takes no input, it returns the users cart when asked",
+  input_schema: {
+    type: "object" as "object",
+    properties: {},
+    required: []
+  }
+};

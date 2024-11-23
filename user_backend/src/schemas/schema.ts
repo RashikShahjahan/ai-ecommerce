@@ -43,6 +43,10 @@ export const ToolResultSchema = z.discriminatedUnion('toolName', [
   z.object({
     toolName: z.literal('addEssenceToCart'),
     data: CartSchema
+  }),
+  z.object({
+    toolName: z.literal('getCart'),
+    data: CartSchema
   })
 ]);
 

@@ -52,4 +52,28 @@ async function addEssenceToCart(essenceId: string, userId: string): Promise<Cart
     }
 }
 
-export { addEssenceToCart };
+async function getCart(userId: string): Promise<Cart> {
+    const cart = await prisma.cart.findUnique({
+        where: { userId: userId },
+        include: { items: true }
+    });
+
+    // Return empty cart if none exists
+    if (!cart) {
+        return {
+            id: '',
+            userId,
+            items: [],
+            total: 0
+        };
+    }
+
+    const total = cart.items.reduce((acc, item) => acc + item.price, 0);
+
+    return {
+        ...cart,
+        total
+    };
+}
+
+export { addEssenceToCart, getCart };
