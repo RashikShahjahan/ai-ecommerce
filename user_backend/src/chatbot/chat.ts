@@ -1,6 +1,6 @@
 import { Anthropic } from '@anthropic-ai/sdk';
-import { ADD_ESSENSE_TO_CART_TOOL, ESSENCE_SEARCH_TOOL } from './tools/tool';
-import { addEssenceToCart } from './tools/cart';
+import { ADD_ESSENSE_TO_CART_TOOL, ESSENCE_SEARCH_TOOL, GET_CART_TOOL } from './tools/tool';
+import { addEssenceToCart, getCart } from './tools/cart';
 import { findSimilarDocuments } from './utils/embeddings';
 import type { MessageParam, TextBlockParam } from '@anthropic-ai/sdk/src/resources/messages.js';
 import  { 
@@ -36,6 +36,14 @@ async function processToolCall(toolName: string, toolInput: Record<string, unkno
                 data: cart
             };
         }
+        case "getCart": {
+            const cart = await getCart(userId);
+            
+            return {
+                toolName: "getCart",
+                data: cart
+            };
+        }
         default:
             throw new Error(`Unknown tool: ${toolName}`);
     }
@@ -46,26 +54,23 @@ async function formatToolResult(toolResult: ToolResult): Promise<TextBlockParam>
         case "searchEssences":
             return {
                 type: "text",
-                text: `${toolResult.data.map(essence => `
-                    Name: ${essence.name}
-                    Description: ${essence.description}
-                    Price: ${essence.price}
-                    Stock: ${essence.stock}
-                    Similarity: ${Number((1 - essence.similarity).toFixed(2))}
-                `).join('\n')}`
+                text: toolResult.data.map(essence => 
+                    `Name: ${essence.name}\nDescription: ${essence.description}\nPrice: ${essence.price}\nStock: ${essence.stock}\nSimilarity: ${Number((1 - essence.similarity).toFixed(2))}`
+                ).join('\n').trim()
             };
         case "addEssenceToCart":
             return {
                 type: "text",
-                text: `Added to cart:
-                    ${toolResult.data.items.map(item => `
-                    - ${item.name}
-                      Price: $${item.price}
-                      Subtotal: $${item.price}
-                    `).join('')}
-                    -------------------------
-                    Total Items: ${toolResult.data.items.length}
-                    Cart Total: $${toolResult.data.total}`
+                text: `Added to cart:${toolResult.data.items.map(item => 
+                    `\n- ${item.name}\n  Price: $${item.price}\n  Subtotal: $${item.price}`
+                ).join('')}\n-------------------------\nTotal Items: ${toolResult.data.items.length}\nCart Total: $${toolResult.data.total}`.trim()
+            };
+        case "getCart":
+            return {
+                type: "text",
+                text: `Current cart:${toolResult.data.items.map(item => 
+                    `\n- ${item.name}\n  Price: $${item.price}\n  Subtotal: $${item.price}`
+                ).join('')}\n-------------------------\nTotal Items: ${toolResult.data.items.length}\nCart Total: $${toolResult.data.total}`.trim()
             };
         default:
             throw new Error(`Unknown tool result type: ${toolResult}`);
@@ -73,14 +78,6 @@ async function formatToolResult(toolResult: ToolResult): Promise<TextBlockParam>
 }
 
 export async function chat(prompt: string, userId: string): Promise<ChatResponse> {
-    // Get previous messages for this user
-    const previousMessages = await prisma.message.findMany({
-        where: { userId: userId },
-        orderBy: { id: 'asc' },
-        select: { role: true, content: true }
-    });
-
-    // Save the new user message
     await prisma.message.create({
         data: {
             content: prompt,
@@ -89,70 +86,67 @@ export async function chat(prompt: string, userId: string): Promise<ChatResponse
         }
     });
 
+    const previousMessages = await prisma.message.findMany({
+        where: { userId: userId },
+        orderBy: { id: 'asc' },
+        select: { role: true, content: true }
+    });
+ 
+
     const messages: MessageParam[] = [
         ...previousMessages.map(msg => ({ 
             role: msg.role as MessageRole, 
             content: msg.content 
         })),
-        { role: "user", content: prompt }
     ];
 
-    const message = await client.messages.create({
+    const callToolResponse = await client.messages.create({
         model: "claude-3-5-sonnet-20241022",
         max_tokens: 1024,
-        tools: [ESSENCE_SEARCH_TOOL, ADD_ESSENSE_TO_CART_TOOL],
+        tools: [ESSENCE_SEARCH_TOOL, ADD_ESSENSE_TO_CART_TOOL, GET_CART_TOOL],
         messages: messages,
     });
 
-    if (message.stop_reason === "tool_use") {
-        const toolUseContent = message.content.find(c => c.type === "tool_use");
+    await prisma.message.create({
+        data: {
+            content: JSON.stringify(callToolResponse.content),
+            role: "assistant",
+            userId: userId
+        }
+    });
+
+
+
+    if (callToolResponse.stop_reason === "tool_use") {
+        const toolUseContent = callToolResponse.content.find(c => c.type === "tool_use");
         const toolUse = ToolUseSchema.parse(toolUseContent);
         const toolResult = await processToolCall(toolUse.name, toolUse.input, userId);
-        
-        const formattedToolResult: TextBlockParam = await formatToolResult(toolResult);
+        const formattedToolResult = await formatToolResult(toolResult);
 
-        const messages: MessageParam[] = [
-            ...previousMessages.map(msg => ({ 
-                role: msg.role as MessageRole, 
-                content: msg.content 
-            })),
-            { role: "user", content: prompt },
-            { role: "assistant", content: message.content },
-            { 
-                role: "user", 
-                content: [
-                    {
-                        type: "tool_result",
-                        tool_use_id: toolUse.id,
-                        content: [formattedToolResult]
-                    }
-                ]
-            },
-            {
-                role: "user",
-                content: "Use the tool result to answer the question."
-            }
-        ];
-
-        const finalMessage = await client.messages.create({
+    
+        // Make another call to Claude with the updated conversation
+        const finalResponse = await client.messages.create({
             model: "claude-3-5-sonnet-20241022",
             max_tokens: 1024,
-            tools: [ESSENCE_SEARCH_TOOL, ADD_ESSENSE_TO_CART_TOOL],
-            messages: messages
+            tools: [ESSENCE_SEARCH_TOOL, ADD_ESSENSE_TO_CART_TOOL, GET_CART_TOOL],
+            messages: [
+                ...messages,
+                { role: "assistant", content: [callToolResponse.content[0]] },
+                { role: "user", content: [formattedToolResult] }
+            ],
         });
 
-
         return {
-            message: finalMessage.content.map(block => ({
+            message: finalResponse.content.map(block => ({
                 type: block.type,
                 text: 'text' in block ? block.text : JSON.stringify(block)
             })),
-            toolResults: toolResult ? [toolResult] : null
+            toolResults: [toolResult]
         };
     }
 
     return {
-        message: message.content.map(block => ({
+        message: callToolResponse.content.map(block => ({
             type: block.type,
             text: 'text' in block ? block.text : JSON.stringify(block)
         })),
